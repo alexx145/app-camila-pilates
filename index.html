@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camila Cerqueira Studio de Pilates — Gestão</title>
+    <meta name="description" content="Sistema de gestão para o Studio de Pilates Camila Cerqueira. Controle de alunos, evolução, presença e pagamentos.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=6-9">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#999a85">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CC Studio">
+    <link rel="apple-touch-icon" href="Ícone verde.png">
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-brand">
+                <div class="login-logo">
+                    <img src="logo-camila.png" alt="Logo Camila Cerqueira" style="width: 100%; height: 100%; border-radius: var(--radius-lg); object-fit: contain;">
+                </div>
+                <h1>Camila Cerqueira</h1>
+                <p class="login-subtitle">Studio de Pilates</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="login-email">E-mail</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="login-email" placeholder="seu@email.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Senha</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="login-password" placeholder="••••••••" required>
+                        <i class="fas fa-eye password-toggle" id="toggle-password"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full" id="login-btn">
+                    <span>Entrar</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <div style='text-align:center; margin: 1.5rem 0; color: #766b61; font-size: 0.8rem;'>ou</div>
+                <button id="google-login-btn" type="button" class="btn btn-ghost btn-full" style="display:flex; gap:10px; align-items:center; justify-content:center; border: 1px solid #ddd; background: white;">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Entrar com Google
+                </button>
+                <div class="login-recovery-links" style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.85rem;">
+                    <a href="#" id="forgot-login" style="color: var(--primary); text-decoration: none; font-weight: 500;">Esqueci meu login</a>
+                    <a href="#" id="forgot-password" style="color: var(--primary); text-decoration: none; font-weight: 500;">Esqueci minha senha</a>
+                </div>
+                <p id="login-error" class="login-error" style="display:none; margin-top: 1rem;">E-mail ou senha incorretos.</p>
+            </form>
+            <p class="login-footer">Dados protegidos conforme LGPD</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app" class="app" style="display:none;">
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-brand">
+                <img src="Ícone branco.png" alt="Logo">
+                <span>Camila Cerqueira<br>Studio</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="students">
+                    <i class="fas fa-users"></i>
+                    <span>Alunos</span>
+                </a>
+                <a href="#" class="nav-item" data-page="classes">
+                    <i class="fas fa-clock"></i>
+                    <span>Turmas</span>
+                </a>
+                <a href="#" class="nav-item" data-page="birthdays" id="nav-birthdays">
+                    <i class="fas fa-birthday-cake"></i>
+                    <span>Aniversários</span>
+                </a>
+                <a href="#" class="nav-item" data-page="attendance">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Presença</span>
+                </a>
+                <a href="#" class="nav-item" data-page="payments">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Pagamentos</span>
+                </a>
+                <a href="#" class="nav-item" data-page="finance" id="nav-finance">
+                    <i class="fas fa-file-invoice-dollar"></i> <span>Financeiro</span>
+                </a>
+                <a href="#" class="nav-item" data-page="reports">
+                    <i class="fas fa-chart-line"></i> <span>Relatórios</span>
+                </a>
+                <a href="#" class="nav-item" data-page="staff" id="nav-staff">
+                    <i class="fas fa-user-tie"></i> <span>Profissionais</span>
+                </a>
+                <a href="#" class="nav-item" data-page="tasks">
+                    <i class="fas fa-list-check"></i> <span>Tarefas</span>
+                </a>
+                <a href="#" class="nav-item" data-page="alerts" onclick="navigateTo('alerts')">
+                    <i class="fas fa-bell"></i>
+                    <div>Alertas <span class="badge badge-danger" id="alert-badge" style="display:none;">0</span></div>
+                </a>
+                <div style="flex-grow: 1;"></div>
+                <a href="#" class="nav-item text-danger" onclick="handleLogout()" style="margin-top: auto;">
+                    <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- MOBILE HEADER -->
+        <header id="mobile-header" class="mobile-header">
+            <button id="menu-toggle" class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="mobile-brand">
+                <img src="Ícone branco.png" alt="Logo">
+                <span>Camila Cerqueira Studio</span>
+            </div>
+            <button id="mobile-logout" class="menu-toggle">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main id="main-content" class="main-content">
+
+            <!-- DASHBOARD PAGE -->
+            <section id="page-dashboard" class="page active">
+                <div class="page-header">
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p class="page-subtitle">Visão geral do seu studio</p>
+                    </div>
+                <div id="header-date" class="header-date-filter" style="min-width: 250px;">
+                    <span id="dash-day-label" style="font-weight: 600; color: var(--text-secondary); margin-right: 0.5rem;"></span>
+                    <i class="fas fa-calendar-alt"></i>
+                    <input type="date" id="dash-date-filter" onchange="renderDashboard()">
+                </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card metric-students">
+                        <div class="metric-icon"><i class="fas fa-users"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-value" id="metric-total-students">0</span>
+                            <span class="metric-label">Alunos Ativos</span>
+                        </div>
+                    </div>
+                    <div class="metric-card metric-classes">
+                        <div class="metric-icon"><i class="fas fa-calendar-day"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-value" id="metric-classes-today">0</span>
+                            <span class="metric-label">Aulas Hoje</span>
+                        </div>
+                    </div>
+                    <div class="metric-card metric-payments">
+                        <div class="metric-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-value" id="metric-pending-payments">0</span>
+                            <span class="metric-label">Pagamentos Pendentes</span>
+                        </div>
+                    </div>
+                    <div class="metric-card metric-alerts">
+                        <div class="metric-icon"><i class="fas fa-bell"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-value" id="metric-renewal-alerts">0</span>
+                            <span class="metric-label">Alertas de Renovação</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid dashboard-grid-4">
+                    <div class="card card-finance-summary">
+                        <div class="card-header">
+                            <h3><i class="fas fa-wallet"></i> Balanço do Mês</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="finance-mini-grid">
+                                <div class="finance-item income">
+                                    <label>Entradas</label>
+                                    <span id="dash-income">R$ 0,00</span>
+                                </div>
+                                <div class="finance-item expense">
+                                    <label>Saídas</label>
+                                    <span id="dash-expense">R$ 0,00</span>
+                                </div>
+                                <div class="finance-item balance">
+                                    <label>Saldo</label>
+                                    <span id="dash-balance">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-birthdays">
+                        <div class="card-header">
+                            <h3><i class="fas fa-cake-candles"></i> Aniversariantes de Hoje</h3>
+                        </div>
+                        <div class="card-body dashboard-list" id="dashboard-birthday-list">
+                            <p class="empty-state">Nenhum aniversário hoje <i class="fas fa-gift"></i></p>
+                        </div>
+                    </div>
+
+                    <div class="card card-renewals">
+                        <div class="card-header">
+                            <h3><i class="fas fa-bell"></i> Planos a Vencer</h3>
+                        </div>
+                        <div class="card-body dashboard-list" id="dashboard-renewals-list">
+                            <p class="empty-state">Nenhum plano próximo de vencer <i class="fas fa-calendar-alt"></i></p>
+                        </div>
+                    </div>
+
+                    <div class="card card-tasks">
+                        <div class="card-header">
+                            <h3><i class="fas fa-list-check"></i> Minhas Tarefas</h3>
+                        </div>
+                        <div class="card-body dashboard-list" id="dashboard-tasks-list">
+                            <p class="empty-state">Tudo pronto! <i class="fas fa-clipboard-check"></i></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BIRTHDAYS PAGE -->
+            <section id="page-birthdays" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Próximos Aniversariantes</h1>
+                        <p class="page-subtitle">Acompanhe os aniversários de hoje e dos próximos dias</p>
+                    </div>
+                </div>
+                
+                <div id="birthdays-page-content" style="max-width: 800px; padding: 20px 0;">
+                    <!-- Injected by app.js -->
+                </div>
+            </section>
+
+            <!-- STUDENTS PAGE -->
+            <section id="page-students" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Alunos</h1>
+                        <p class="page-subtitle">Gerencie seus alunos</p>
+                    </div>
+                    <button class="btn btn-primary" id="add-student-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Novo Aluno</span>
+                    </button>
+                </div>
+
+                <div class="search-bar">
+                    <div class="input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="student-search" placeholder="Buscar por nome, telefone ou tag...">
+                    </div>
+                    <div class="filter-tags" id="filter-tags"></div>
+                </div>
+
+                <div id="students-list" class="students-grid">
+                    <p class="empty-state">Nenhum aluno cadastrado ainda. Clique em "Novo Aluno" para começar!</p>
+                </div>
+            </section>
+
+            <!-- STUDENT DETAIL PAGE -->
+            <section id="page-student-detail" class="page">
+                <div class="page-header">
+                    <button class="btn btn-ghost" id="back-to-students">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Voltar</span>
+                    </button>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="saveAllStudentData(event)">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <button class="btn btn-danger" id="delete-student-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="student-detail-layout">
+                    <!-- LEFT: Profile -->
+                    <div class="student-profile-card card">
+                        <div class="profile-photo-wrapper">
+                            <img id="student-photo" src="" alt="Foto do aluno" class="profile-photo">
+                            <label class="photo-upload-btn" for="photo-upload">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file" id="photo-upload" accept="image/*" style="display:none;">
+                        </div>
+                        <h2 id="student-name-display" class="student-name-display"></h2>
+                        <div class="student-tags" id="student-tags-display"></div>
+                        <div class="student-contact">
+                            <a id="student-whatsapp-link" href="#" target="_blank" class="btn btn-whatsapp btn-sm">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+                            <a id="student-email-link" href="#" class="btn btn-ghost btn-sm">
+                                <i class="fas fa-envelope"></i> E-mail
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Tabs -->
+                    <div class="student-detail-tabs">
+                        <div class="tabs">
+                            <button class="tab active" data-tab="info">Dados</button>
+                            <button class="tab" data-tab="evaluation">Avaliação</button>
+                            <button class="tab" data-tab="evolution">Evolução</button>
+                            <button class="tab" data-tab="sessions">Sessões</button>
+                            <button class="tab" data-tab="payment">Pagamento</button>
+                        </div>
+
+                        <!-- TAB: Info -->
+                        <div class="tab-content active" id="tab-info">
+                            <form id="student-info-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="required">Nome Completo</label>
+                                        <input type="text" id="student-name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="required" for="student-dob">Data de Nascimento</label>
+                                        <input type="date" id="student-dob" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="student-cpf">CPF</label>
+                                        <input type="text" id="student-cpf" placeholder="000.000.000-00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="student-rg">RG</label>
+                                        <input type="text" id="student-rg" placeholder="Opcional">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="required">Telefone / WhatsApp</label>
+                                        <input type="tel" id="student-phone">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>E-mail</label>
+                                        <input type="email" id="student-email">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="required">Dias da Semana (Turmas)</label>
+                                    <div style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-top:0.5rem;">
+                                        <label style="display:flex; align-items:center; gap:0.25rem; font-weight:normal; font-size:0.85rem;"><input type="checkbox" name="class-days" value="1"> Seg</label>
+                                        <label style="display:flex; align-items:center; gap:0.25rem; font-weight:normal; font-size:0.85rem;"><input type="checkbox" name="class-days" value="2"> Ter</label>
+                                        <label style="display:flex; align-items:center; gap:0.25rem; font-weight:normal; font-size:0.85rem;"><input type="checkbox" name="class-days" value="3"> Qua</label>
+                                        <label style="display:flex; align-items:center; gap:0.25rem; font-weight:normal; font-size:0.85rem;"><input type="checkbox" name="class-days" value="4"> Qui</label>
+                                        <label style="display:flex; align-items:center; gap:0.25rem; font-weight:normal; font-size:0.85rem;"><input type="checkbox" name="class-days" value="5"> Sex</label>
+                                        <label style="display:flex; align-items:center; gap:0.25rem; font-weight:normal; font-size:0.85rem;"><input type="checkbox" name="class-days" value="6"> Sab</label>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="required">Turma (Horário)</label>
+                                        <select id="student-class-time">
+                                            <option value="">Selecione o horário</option>
+                                            <option value="07:00">07:00</option>
+                                            <option value="08:00">08:00</option>
+                                            <option value="09:00">09:00</option>
+                                            <option value="10:00">10:00</option>
+                                            <option value="17:00">17:00</option>
+                                            <option value="18:00">18:00</option>
+                                            <option value="19:00">19:00</option>
+                                            <option value="20:00">20:00</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tags</label>
+                                        <input type="text" id="student-tags" placeholder="Ex: Gestante, Pós-operatório (separar por vírgula)">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="required">Instrutor Responsável</label>
+                                        <select id="student-instructor">
+                                            <option value="">Sem professor</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="display:flex; align-items:center; gap:0.5rem; padding-top:1.5rem;">
+                                        <input type="checkbox" id="student-experimental" style="width:auto;" onchange="toggleExperimentalMode()">
+                                        <label for="student-experimental" style="margin:0;">Aluno Experimental</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Observações Gerais</label>
+                                    <textarea id="student-notes" rows="3" placeholder="Anotações diversas sobre o aluno..."></textarea>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="saveAllStudentData(event)">
+                                    <i class="fas fa-save"></i> Salvar Dados
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- TAB: Evaluation -->
+                        <div class="tab-content" id="tab-evaluation">
+                            <form id="student-evaluation-form">
+                                <h3>Ficha de Avaliação Inicial</h3>
+                                <div class="form-group">
+                                    <label>Queixa Principal</label>
+                                    <textarea id="eval-complaint" rows="3" placeholder="Qual a principal queixa ou motivo da busca pelo Pilates?"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Histórico Médico</label>
+                                    <textarea id="eval-medical-history" rows="3" placeholder="Cirurgias, lesões, doenças pré-existentes..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Medicamentos em Uso</label>
+                                    <textarea id="eval-medications" rows="2" placeholder="Medicamentos que o aluno utiliza atualmente..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Objetivos</label>
+                                    <textarea id="eval-goals" rows="3" placeholder="O que o aluno deseja alcançar com o Pilates?"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Avaliação Postural / Observações Clínicas</label>
+                                    <textarea id="eval-postural" rows="4" placeholder="Análise postural, desvios, amplitude de movimento..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Restrições / Contraindicações</label>
+                                    <textarea id="eval-restrictions" rows="3" placeholder="Movimentos ou exercícios contraindicados..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Salvar Avaliação
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- TAB: Evolution -->
+                        <div class="tab-content" id="tab-evolution">
+                            <div class="evolution-header">
+                                <h3>Timeline de Evolução</h3>
+                                <button class="btn btn-primary btn-sm" id="add-evolution-btn">
+                                    <i class="fas fa-plus"></i> Nova Nota
+                                </button>
+                            </div>
+                            <div id="evolution-form-container" style="display:none;">
+                                <form id="evolution-form" class="card evolution-form-card">
+                                    <div class="form-group">
+                                        <label>Data</label>
+                                        <input type="date" id="evo-date" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Nota de Evolução</label>
+                                        <textarea id="evo-note" rows="4" placeholder="Descreva a evolução, progresso, observações..." required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Anexar Foto (Opcional)</label>
+                                        <div class="evo-photo-upload">
+                                            <input type="file" id="evo-photo" accept="image/*" style="display:none;" onchange="handleEvoPhotoPreview(this)">
+                                            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('evo-photo').click()">
+                                                <i class="fas fa-camera"></i> Escolher Foto
+                                            </button>
+                                            <div id="evo-photo-preview" class="evo-photo-preview" style="display:none; margin-top:0.5rem;">
+                                                <img src="" style="width:100px; height:100px; object-fit:cover; border-radius:var(--radius-sm);">
+                                                <button type="button" class="btn-remove-photo" onclick="removeEvoPhoto()">&times;</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-save"></i> Salvar
+                                        </button>
+                                        <button type="button" class="btn btn-ghost btn-sm" id="cancel-evolution-btn">Cancelar</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div id="evolution-timeline" class="timeline">
+                                <p class="empty-state">Nenhuma nota de evolução registrada.</p>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Sessions -->
+                        <div class="tab-content" id="tab-sessions">
+                            <h3>Histórico de Sessões</h3>
+                            <div id="sessions-list" class="sessions-list">
+                                <p class="empty-state">Nenhuma sessão registrada para este aluno.</p>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Payment -->
+                        <div class="tab-content" id="tab-payment">
+                            <form id="student-payment-form">
+                                <h3>Plano de Pagamento</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Tipo de Plano</label>
+                                        <select id="payment-plan-type">
+                                            <option value="monthly">Mensal</option>
+                                            <option value="quarterly">Trimestral</option>
+                                            <option value="semiannual">Semestral</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Frequência (Vezes/Semana)</label>
+                                        <select id="payment-frequency">
+                                            <option value="1">1x na semana</option>
+                                            <option value="2">2x na semana</option>
+                                            <option value="3">3x na semana</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Valor (R$)</label>
+                                        <input type="number" id="payment-value" step="0.01" placeholder="0,00">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Data de Início</label>
+                                        <input type="date" id="payment-start-date">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Vencimento</label>
+                                        <input type="date" id="payment-end-date" readonly>
+                                    </div>
+                                </div>
+                                <h4 style="margin-top:1rem;margin-bottom:0.5rem;">Forma de Pagamento</h4>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Método</label>
+                                        <select id="payment-method">
+                                            <option value="pix">PIX</option>
+                                            <option value="debit">Débito</option>
+                                            <option value="credit">Crédito</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="installments-group" style="display:none;">
+                                        <label>Parcelas</label>
+                                        <select id="payment-installments">
+                                            <option value="1">1x</option>
+                                            <option value="2">2x</option>
+                                            <option value="3">3x</option>
+                                            <option value="4">4x</option>
+                                            <option value="5">5x</option>
+                                            <option value="6">6x</option>
+                                            <option value="7">7x</option>
+                                            <option value="8">8x</option>
+                                            <option value="9">9x</option>
+                                            <option value="10">10x</option>
+                                            <option value="11">11x</option>
+                                            <option value="12">12x</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Taxa da Máquina (Valor R$)</label>
+                                        <input type="number" id="payment-machine-fee" step="0.01" placeholder="0,00" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select id="payment-status">
+                                            <option value="active" selected>Ativo</option>
+                                            <option value="pending">Pendente</option>
+                                            <option value="overdue">Vencido</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="saveAllStudentData(event)">
+                                    <i class="fas fa-save"></i> Salvar Pagamento
+                                </button>
+                            </form>
+                            <div class="payment-history-section">
+                                <h4>Histórico de Pagamentos</h4>
+                                <div id="payment-history" class="payment-history">
+                                    <p class="empty-state">Nenhum pagamento registrado.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ATTENDANCE PAGE -->
+            <section id="page-attendance" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Controle de Presença</h1>
+                        <p class="page-subtitle">Registre presença e exercícios</p>
+                    </div>
+                    <button class="btn btn-primary" id="new-session-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Nova Sessão</span>
+                    </button>
+                </div>
+
+                <!-- New Session Form -->
+                <div id="session-form-container" class="card" style="display:none;">
+                    <form id="session-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Data da Sessão</label>
+                                <input type="date" id="session-date" required onchange="renderAttendanceList()">
+                            </div>
+                            <div class="form-group">
+                                <label>Turma (Horário)</label>
+                                <select id="session-time" required onchange="renderAttendanceList()">
+                                    <option value="">Selecione</option>
+                                    <option value="07:00">07:00</option>
+                                    <option value="08:00">08:00</option>
+                                    <option value="09:00">09:00</option>
+                                    <option value="10:00">10:00</option>
+                                    <option value="17:00">17:00</option>
+                                    <option value="18:00">18:00</option>
+                                    <option value="19:00">19:00</option>
+                                    <option value="20:00">20:00</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Sessão</label>
+                                <select id="session-type">
+                                    <option value="presença" selected>Aula Normal</option>
+                                    <option value="experimental">Aula Experimental</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Exercícios da Sessão</label>
+                            <textarea id="session-exercises" rows="4" placeholder="Descreva os exercícios realizados, séries, repetições..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Observações</label>
+                            <textarea id="session-observations" rows="2" placeholder="Observações gerais da sessão..."></textarea>
+                        </div>
+                        <h4>Presença dos Alunos</h4>
+                        <div id="session-attendance-list" class="attendance-checklist"></div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Sessão
+                            </button>
+                            <button type="button" class="btn btn-ghost" id="cancel-session-btn">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Makeup Classes Pending -->
+                <div id="makeup-classes-section" class="card" style="margin-top:1.5rem;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-redo"></i> Reposições Pendentes</h3>
+                    </div>
+                    <div class="card-body" id="makeup-classes-list">
+                        <p class="empty-state">Nenhuma reposição pendente.</p>
+                    </div>
+                </div>
+
+                <!-- Sessions History -->
+                <div id="attendance-history" class="sessions-history" style="margin-top:1.5rem;">
+                    <p class="empty-state">Nenhuma sessão registrada. Clique em "Nova Sessão" para começar!</p>
+                </div>
+            </section>
+
+            <!-- PAYMENTS PAGE -->
+            <section id="page-payments" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Gestão de Pagamentos</h1>
+                        <p class="page-subtitle">Controle financeiro dos alunos</p>
+                    </div>
+                </div>
+
+                <div class="payments-filter-bar">
+                    <div class="filter-group">
+                        <label>Filtrar por Mês de Referência</label>
+                        <div class="filter-actions">
+                            <input type="month" id="pay-month-filter" onchange="renderPaymentsPage()">
+                            <button class="btn btn-ghost btn-sm" onclick="clearPaymentFilter()">Limpar Filtro</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payments-summary">
+                    <div class="summary-item summary-active">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="pay-active-count">0</span>
+                        <label>Em Dia</label>
+                    </div>
+                    <div class="summary-item summary-warning">
+                        <i class="fas fa-clock"></i>
+                        <span id="pay-warning-count">0</span>
+                        <label>Vence em Breve</label>
+                    </div>
+                    <div class="summary-item summary-overdue">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="pay-overdue-count">0</span>
+                        <label>Vencido</label>
+                    </div>
+                </div>
+
+                <div id="payments-table-container" class="card">
+                    <table class="payments-table">
+                        <thead>
+                            <tr>
+                                <th>Aluno</th>
+                                <th>Plano</th>
+                                <th>Valor</th>
+                                <th>Vencimento</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payments-table-body">
+                        </tbody>
+                    </table>
+                    <p id="payments-empty" class="empty-state" style="display:none;">Nenhum pagamento cadastrado.</p>
+                </div>
+            </section>
+
+            <!-- CLASSES PAGE -->
+            <section id="page-classes" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Turmas</h1>
+                        <p class="page-subtitle">Alunos organizados por horário de aula</p>
+                    </div>
+                    <div style="display:flex; gap:1rem; align-items:center;">
+                        <span id="classes-day-label" style="font-weight:600; color:var(--text-secondary);"></span>
+                        <label style="font-size:0.85rem; color:var(--text-secondary);">Filtrar data:</label>
+                        <input type="date" id="classes-date-filter" style="padding:0.5rem; border:1px solid #ddd; border-radius:6px;" onchange="renderClassesPage()">
+                    </div>
+                </div>
+                <div id="classes-grid" class="classes-grid"></div>
+            </section>
+
+            <!-- TASKS PAGE -->
+            <section id="page-tasks" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Tarefas</h1>
+                        <p class="page-subtitle">Organize suas atividades do dia</p>
+                    </div>
+                    <form id="task-form" class="task-add-form">
+                        <div class="task-form-row">
+                            <div class="input-wrapper task-input-wrapper">
+                                <i class="fas fa-plus-circle"></i>
+                                <input type="text" id="task-input" placeholder="O que precisa ser feito?" required>
+                            </div>
+                        </div>
+                        <div class="task-form-row">
+                            <div class="input-wrapper">
+                                <i class="fas fa-calendar-alt"></i>
+                                <input type="date" id="task-date">
+                            </div>
+                            <div class="input-wrapper">
+                                <i class="fas fa-tag"></i>
+                                <input type="text" id="task-tags" placeholder="Etiquetas (separadas por vírgula)">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Adicionar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="view-filters">
+                    <div class="filter-group">
+                        <label><i class="fas fa-filter"></i> Filtrar por Data</label>
+                        <input type="date" id="tasks-date-filter" onchange="renderTasksPage()">
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fas fa-tags"></i> Filtrar por Etiqueta</label>
+                        <input type="text" id="tasks-tag-filter" placeholder="Buscar etiqueta..." oninput="renderTasksPage()">
+                    </div>
+                </div>
+
+                <div class="tasks-kanban-grid">
+                    <!-- Column 1: PENDENTES (Hoje/Atrasadas) -->
+                    <div class="card task-column">
+                        <div class="card-header" style="border-bottom: 3px solid var(--danger);">
+                            <h3><i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i> Hoje / Atrasadas</h3>
+                        </div>
+                        <div class="card-body" id="tasks-pending-today-list">
+                            <p class="empty-state">Sem tarefas críticas.</p>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: PRÓXIMAS (Planejamento) -->
+                    <div class="card task-column">
+                        <div class="card-header" style="border-bottom: 3px solid var(--primary);">
+                            <h3><i class="fas fa-calendar-alt" style="color:var(--primary)"></i> Planejamento</h3>
+                        </div>
+                        <div class="card-body" id="tasks-upcoming-list">
+                            <p class="empty-state">Nada planejado.</p>
+                        </div>
+                    </div>
+
+                    <!-- Column 3: CONCLUÍDAS -->
+                    <div class="card task-column">
+                        <div class="card-header" style="border-bottom: 3px solid var(--success);">
+                            <h3><i class="fas fa-check-circle" style="color:var(--success)"></i> Concluídas</h3>
+                        </div>
+                        <div class="card-body" id="tasks-completed-history-list">
+                            <p class="empty-state">Nenhum histórico.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FINANCE PAGE -->
+            <section id="page-finance" class="page">
+                <div class="page-header">
+                    <h2>Gestão Financeira</h2>
+                    <div class="header-actions">
+                        <select id="finance-month-filter" class="form-control-sm">
+                            <option value="01">Janeiro</option>
+                            <option value="02">Fevereiro</option>
+                            <option value="03">Março</option>
+                            <option value="04">Abril</option>
+                            <option value="05">Maio</option>
+                            <option value="06">Junho</option>
+                            <option value="07">Julho</option>
+                            <option value="08">Agosto</option>
+                            <option value="09">Setembro</option>
+                            <option value="10">Outubro</option>
+                            <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+                        </select>
+                        <select id="finance-year-filter" class="form-control-sm">
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="showExpenseForm()">
+                            <i class="fas fa-plus"></i> Nova Transação
+                        </button>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card income">
+                        <div class="metric-icon"><i class="fas fa-arrow-up"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-value" id="fin-total-income">R$ 0,00</span>
+                            <span class="metric-label">Receitas (Mês)</span>
+                        </div>
+                    </div>
+                    <div class="metric-card expense">
+                        <div class="metric-icon"><i class="fas fa-arrow-down"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-value" id="fin-total-expense">R$ 0,00</span>
+                            <span class="metric-label">Despesas (Mês)</span>
+                        </div>
+                    </div>
+                    <div class="metric-card balance">
+                        <div class="metric-icon"><i class="fas fa-scale-balanced"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-value" id="fin-total-balance">R$ 0,00</span>
+                            <span class="metric-label">Balanço Final</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Nova Transação -->
+                <div id="expense-form-container" class="card" style="display:none; margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-plus-circle"></i> Lançar Transação</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="expense-form">
+                            <div class="form-row" style="margin-bottom: 1rem;">
+                                <div class="form-group" style="flex-direction: row; gap: 1rem; align-items: center;">
+                                    <label style="margin:0;"><input type="radio" name="trans-category" value="income" onchange="document.getElementById('exp-type-container').style.display='none'"> Receita</label>
+                                    <label style="margin:0;"><input type="radio" name="trans-category" value="expense" checked onchange="document.getElementById('exp-type-container').style.display='block'"> Despesa</label>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Descrição</label>
+                                    <input type="text" id="exp-description" placeholder="Ex: Mensalidade extra, Aluguel, Luz" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor (R$)</label>
+                                    <input type="number" id="exp-value" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Data</label>
+                                    <input type="date" id="exp-date" required>
+                                </div>
+                                <div class="form-group" id="exp-type-container">
+                                    <label>Recorrência de Despesa</label>
+                                    <select id="exp-type">
+                                        <option value="variable">Variável (Única)</option>
+                                        <option value="fixed">Fixa (Repete todo mês)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="save-trans-btn">Salvar Transação</button>
+                                <button type="button" class="btn btn-ghost" onclick="hideExpenseForm()">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-list-ul"></i> Transações Recentes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="finance-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Valor</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="finance-table-body"></tbody>
+                            </table>
+                        </div>
+                        <div id="finance-empty" class="empty-state" style="display:none;">Nenhuma transação este mês.</div>
+                    </div>
+                </div>
+            </section>
+
+
+
+            <!-- ALERTS PAGE -->
+            <section id="page-alerts" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Alertas de Renovação</h1>
+                        <p class="page-subtitle">Planos que vencem nos próximos 30 dias</p>
+                    </div>
+                </div>
+                <div id="alerts-list" class="alerts-list">
+                    <p class="empty-state">Nenhum alerta no momento. Tudo em dia! <i class="fas fa-check-circle"></i></p>
+            </section>
+        
+            <!-- SECTION: RELATÓRIOS -->
+            <section id="page-reports" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Relatórios e Desempenho</h1>
+                        <p class="page-subtitle">Análise detalhada do seu studio</p>
+                    </div>
+                    <div class="header-actions report-filters">
+                        <div class="date-range-group">
+                            <input type="date" id="report-start-date" class="form-control-sm">
+                            <span>até</span>
+                            <input type="date" id="report-end-date" class="form-control-sm">
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-ghost btn-sm" onclick="setReportPeriod('today')">Hoje</button>
+                            <button class="btn btn-ghost btn-sm" onclick="setReportPeriod('week')">Semana</button>
+                            <button class="btn btn-ghost btn-sm" onclick="setReportPeriod('month')">Mês</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-selector-bar card">
+                    <div class="form-group" style="margin-bottom:0; flex:1;">
+                        <label style="font-weight:600; font-size:0.9rem; color:var(--text-secondary);">Tipo de Relatório</label>
+                        <select id="report-type-select" class="form-control" onchange="updateReportView()">
+                            <option value="instrutores">Gerencial: Desempenho de Instrutores</option>
+                            <option value="financeiro">Financeiro: Resumo de Período</option>
+                            <option value="frequencia">Operacional: Frequência e Aulas</option>
+                            <option value="conversao">Comercial: Conversão e Matrículas</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="refreshReportData()" style="align-self: flex-end;">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
+                </div>
+
+                <!-- BLOCO 1: DESEMPENHO DE INSTRUTORES -->
+                <div id="report-view-instrutores" class="report-container">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-label">Total de Aulas</span>
+                            <span class="metric-value" id="rep-inst-total-classes">0</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Experimentais</span>
+                            <span class="metric-value" id="rep-inst-total-trials">0</span>
+                        </div>
+                        <div class="metric-card income">
+                            <span class="metric-label">Comissões Totais</span>
+                            <span class="metric-value" id="rep-inst-total-commissions">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top: 1.5rem;">
+                        <div class="card-header"><h3>Detalhamento por Profissional</h3></div>
+                        <div class="card-body">
+                            <table class="finance-table">
+                                <thead>
+                                    <tr>
+                                        <th>Instrutor</th>
+                                        <th>Aulas Dadas</th>
+                                        <th>Experimentais</th>
+                                        <th>Valor Comissão</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-rep-instrutores"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOCO 2: RESUMO FINANCEIRO -->
+                <div id="report-view-financeiro" class="report-container" style="display:none;">
+                    <div class="metrics-grid">
+                        <div class="metric-card income">
+                            <span class="metric-label">Total Entradas</span>
+                            <span class="metric-value" id="rep-fin-income">R$ 0,00</span>
+                        </div>
+                        <div class="metric-card expense">
+                            <span class="metric-label">Total Saídas</span>
+                            <span class="metric-value" id="rep-fin-expense">R$ 0,00</span>
+                        </div>
+                        <div class="metric-card balance">
+                            <span class="metric-label">Saldo Período</span>
+                            <span class="metric-value" id="rep-fin-balance">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top: 1.5rem; border-left: 4px solid var(--danger);">
+                        <div class="card-header">
+                            <h3 style="color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Inadimplência do Período</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <p style="color:var(--text-secondary); margin-bottom:0.5rem;">Soma de todos os pagamentos vencidos/atrasados no intervalo selecionado.</p>
+                                    <h2 id="rep-fin-overdue-total" style="color:var(--danger)">R$ 0,00</h2>
+                                </div>
+                                <i class="fas fa-hand-holding-dollar" style="font-size:3rem; color:var(--danger); opacity:0.2;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOCO 3: FREQUÊNCIA E AULAS -->
+                <div id="report-view-frequencia" class="report-container" style="display:none;">
+                    <div class="metrics-grid">
+                        <div class="metric-card success">
+                            <span class="metric-label">Presenças</span>
+                            <span class="metric-value" id="rep-freq-presence">0</span>
+                        </div>
+                        <div class="metric-card danger">
+                            <span class="metric-label">Faltas</span>
+                            <span class="metric-value" id="rep-freq-absence">0</span>
+                        </div>
+                        <div class="metric-card warning">
+                            <span class="metric-label">Reposições Pendentes</span>
+                            <span class="metric-value" id="rep-freq-makeups">0</span>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top: 1.5rem;">
+                        <div class="card-header"><h3>Distribuição de Aulas por Horário</h3></div>
+                        <div class="card-body">
+                            <div id="rep-freq-distribution" class="chart-placeholder">
+                                <!-- Table-based distribution list -->
+                                <table class="finance-table">
+                                    <thead><tr><th>Horário / Turma</th><th>Ocupação</th><th>Status</th></tr></thead>
+                                    <tbody id="table-rep-frequency"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOCO 4: CONVERSÃO E MATRÍCULAS -->
+                <div id="report-view-conversao" class="report-container" style="display:none;">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-label">Experimentais Agendadas</span>
+                            <span class="metric-value" id="rep-conv-trials">0</span>
+                        </div>
+                        <div class="metric-card success">
+                            <span class="metric-label">Novas Matrículas</span>
+                            <span class="metric-value" id="rep-conv-enrollments">0</span>
+                        </div>
+                        <div class="metric-card primary">
+                            <span class="metric-label">Taxa de Conversão</span>
+                            <span class="metric-value" id="rep-conv-rate">0%</span>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top: 1.5rem;">
+                        <div class="card-header"><h3>Funil de Vendas (Resumo)</h3></div>
+                        <div class="card-body">
+                            <div class="conversion-funnel">
+                                <div class="funnel-step">
+                                    <label>Experimentais</label>
+                                    <div class="funnel-bar" id="funnel-trial-bar" style="width: 100%; background: var(--secondary-bg);"></div>
+                                    <span id="funnel-trial-count">0</span>
+                                </div>
+                                <div class="funnel-step">
+                                    <label>Matrículas</label>
+                                    <div class="funnel-bar" id="funnel-conv-bar" style="width: 0%; background: var(--success);"></div>
+                                    <span id="funnel-conv-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        <!-- SECTION: PROFISSIONAIS -->
+        <section id="page-staff" class="page">
+            <div class="page-header">
+                <h2>Gestão de Profissionais</h2>
+                <button class="btn btn-primary" onclick="showStaffForm()">
+                    <i class="fas fa-plus"></i> Novo Profissional
+                </button>
+            </div>
+
+            <div id="staff-form-container" class="form-card card" style="display:none; margin-bottom: 2rem;">
+                <form id="staff-form">
+                    <input type="hidden" id="edit-staff-email">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nome</label>
+                            <input type="text" id="staff-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="staff-role">Nível de Acesso</label>
+                            <select id="staff-role" required onchange="togglePermissionsList()">
+                                <option value="colaborador">Colaborador</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="permissions-container" style="display: block;">
+                        <label>Permissões (O que o colaborador pode acessar)</label>
+                        <div class="permission-list">
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-dashboard" checked> <label for="perm-dashboard">Dashboard</label>
+                            </div>
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-students" checked> <label for="perm-students">Alunos</label>
+                            </div>
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-attendance" checked> <label for="perm-attendance">Presença</label>
+                            </div>
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-payments" checked> <label for="perm-payments">Pagamentos</label>
+                            </div>
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-classes" checked> <label for="perm-classes">Turmas</label>
+                            </div>
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-tasks" checked> <label for="perm-tasks">Tarefas</label>
+                            </div>
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-finance"> <label for="perm-finance">Financeiro</label>
+                            </div>
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-reports" checked> <label for="perm-reports">Relatórios</label>
+                            </div>
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-staff"> <label for="perm-staff">Profissionais</label>
+                            </div>
+                            <div class="permission-item">
+                                <input type="checkbox" id="perm-alerts" checked> <label for="perm-alerts">Alertas</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Senha de Acesso</label>
+                            <input type="password" id="staff-password" placeholder="Nova senha">
+                        </div>
+                        <div class="form-group">
+                            <label>Comissão por Aula (R$)</label>
+                            <input type="number" id="staff-commission" step="0.01" value="0.00">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" onclick="hideStaffForm()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Profissional</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-body staff-grid" id="staff-list">
+                    <!-- JS populated -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODALS -->
+    <div id="modal-overlay" class="modal-overlay" style="display:none;">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- RECOVERY OVERLAY (V6) -->
+    <div id="recovery-overlay" class="modal-overlay" style="display: none;">
+        <div id="recovery-modal" class="modal" style="display: block; max-width: 400px; position: static; transform: none;">
+            <div class="modal-header">
+                <h3 id="recovery-title">Recuperar Acesso</h3>
+                <button type="button" class="modal-close" id="recovery-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="recovery-desc" style="margin-bottom: 1.5rem; color: var(--text-secondary);"></p>
+                
+                <div id="recovery-step-1">
+                    <div class="form-group">
+                        <label id="recovery-label">E-mail ou Telefone</label>
+                        <input type="text" id="recovery-input" placeholder="">
+                    </div>
+                    <button type="button" class="btn btn-primary btn-full" id="recovery-send-btn" style="margin-top: 1rem;">
+                        <span>Enviar Código</span>
+                    </button>
+                </div>
+
+                <div id="recovery-step-2" style="display: none;">
+                    <div class="form-group">
+                        <label>Insira o código enviado</label>
+                        <input type="text" id="recovery-code" placeholder="000000">
+                    </div>
+                    <div id="new-password-group" style="display: none;">
+                        <div class="form-group">
+                            <label>Nova Senha</label>
+                            <input type="password" id="recovery-new-password" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-full" id="recovery-verify-btn" style="margin-top: 1rem;">
+                        <span>Confirmar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=7-0"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js?v=7-0')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed', err));
+            });
+        }
+    </script>
+</body>
+</html>
